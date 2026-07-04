@@ -114,3 +114,52 @@ AUREA Partnership is scoped to **WD Textile only** (per your instruction) —
 see `const FIRM = "wd";` near the top of the script. If you later want a Nonu
 Garments partnership view too, this can be duplicated with `FIRM = "nonu"`
 and its own AUREA bin.
+
+## 6. Upgrade Log (this version)
+
+This version adds these upgrades on top of the original build, without
+removing any existing feature:
+
+1. **Total Profit uses Quantity.** Turnover = SP×Qty, Manufacturing Cost =
+   CP×Qty, Total Profit = (SP−CP)×Qty. Profit Per Piece is still shown
+   alongside it everywhere — dashboard, analytics, reports, charts, CSV.
+2. **Admin can manually override Cost Price.** The pricing modal still shows
+   the auto-suggested value, but Admin can type a different number. A
+   "manual" badge appears on that order; a "🔄 Use Auto-Suggested" button
+   reverts to the algorithm. Manual cost prices are never overwritten by sync.
+3. **Admin can edit Quantity, Selling Price, Cost Price, Dispatch Date,
+   Remarks, Customer, and Product** from inside the same pricing modal.
+   Partner still can't edit anything.
+4. **Two-way sync for those specific fields.** When Admin saves, AUREA
+   pulls the freshest Factory Orders record, patches only those fields onto
+   it, and pushes it back to the *same* Factory Orders bin. Status and
+   production dates are still 100% Factory-Orders-owned and only ever flow
+   into AUREA — never the reverse. See the race-condition note below.
+5. **Completion Summary strip** at the top of the AUREA dashboard: Completed,
+   Pending, Cancelled, In Production, Ready for Dispatch, Dispatch Today —
+   all live counts, not month-scoped.
+6. **Order cards and detail screens** now show Profit Per Piece and Total
+   Profit alongside the existing figures.
+7. Confirmed everywhere — dashboard, analytics, reports, charts, CSV — uses
+   quantity-scaled totals, not per-unit prices, per Upgrade 1.
+8. Silent 10-second sync, scroll/filter/search preservation, and all
+   original screens are unchanged.
+
+(GST Bill / LR document upload was scoped out of this version by request —
+not built.)
+
+### New: Cancelled status
+Factory Orders didn't have a "cancelled" concept before — added a Cancel
+button (Admin, in order detail) that sets status to `cancelled`. It's
+excluded from the normal pending→cutting→scheduled→dispatched timeline and
+shown in its own section/summary count instead.
+
+### Important: sync race condition
+Two apps can now both write to the Factory Orders bin (Factory Orders itself,
+and AUREA when Admin saves an edit). AUREA always re-pulls the latest record
+immediately before patching, which narrows the risk, but if a Manager and
+Admin save within the same couple of seconds, whichever write lands last
+still wins on any field the other side touched at the same moment. For a
+small team this is unlikely to bite you, but it's not eliminated — a true fix
+would need a real backend with proper merge/locking, which is outside what a
+static GitHub Pages site can do.

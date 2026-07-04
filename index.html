@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AUREA Partnership</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0d13">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AUREA">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #0b0d13;
+    --surface: #161922;
+    --surface2: #1e2230;
+    --border: #2a2f42;
+    --accent: #12a3d4;
+    --accent-dim: rgba(18,163,212,0.18);
+    --gold: #d4af6a;
+    --text: #f2f3f7;
+    --muted: #868ca8;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── HOME ── */
+  #home {
+    align-items: center; justify-content: center;
+    padding: 32px 24px; gap: 22px;
+    background: radial-gradient(ellipse at 50% 0%, #0e2430 0%, var(--bg) 62%);
+  }
+  .home-logo { width: 84px; height: 84px; border-radius: 22px; box-shadow: 0 8px 30px rgba(18,163,212,0.25); }
+  .home-header { text-align: center; }
+  .home-header .tag {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .home-header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
+  .home-header p { font-size: 13.5px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+  .btn-primary {
+    width: 100%; max-width: 340px;
+    background: linear-gradient(135deg, var(--accent), #0c7ea3);
+    color: #fff; border: none; border-radius: var(--radius);
+    padding: 17px 20px; font-size: 15.5px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 6px 24px rgba(18,163,212,0.3);
+    transition: transform 0.15s;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .home-foot { font-size: 11.5px; color: var(--muted); text-align: center; margin-top: 6px; }
+  .home-foot button { background: none; border: none; color: var(--muted); text-decoration: underline; font-size: 11.5px; cursor: pointer; }
+
+  .sync-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    display: inline-block; margin-right: 6px; animation: pulse 2s infinite;
+  }
+  .sync-dot.offline { background: var(--red); animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .sync-status { font-size: 11px; color: var(--muted); display: flex; align-items: center; justify-content: center; margin-top: 4px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--surface2); border: none; color: var(--text);
+    font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .topbar .title { font-size: 16.5px; font-weight: 700; flex: 1; }
+  .topbar .title small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 1px; }
+
+  .content { flex: 1; padding: 16px; overflow-y: auto; padding-bottom: 90px; }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; z-index: 30; padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 10px 4px 8px; background: none; border: none; color: var(--muted);
+    font-size: 10.5px; font-weight: 600; cursor: pointer;
+  }
+  .nav-item .ic { font-size: 18px; }
+  .nav-item.active { color: var(--accent); }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px; position: relative; overflow: hidden;
+  }
+  .kpi-card.wide { grid-column: 1 / -1; }
+  .kpi-card .lbl { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-card .val { font-size: 19px; font-weight: 800; margin-top: 6px; letter-spacing: -0.3px; }
+  .kpi-card .sub { font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+  .kpi-card.accent { background: linear-gradient(135deg, rgba(18,163,212,0.14), var(--surface)); border-color: rgba(18,163,212,0.35); }
+  .kpi-card.gold .val { color: var(--gold); }
+  .kpi-card.green .val { color: var(--green); }
+
+  .section-title {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin: 22px 0 10px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title span.hint { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: none; letter-spacing: 0; }
+
+  /* ── SEARCH / FILTERS ── */
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 11px 14px; margin-bottom: 12px;
+  }
+  .search-box input {
+    flex: 1; background: none; border: none; outline: none; color: var(--text); font-size: 14px; font-family: inherit;
+  }
+  .search-box input::placeholder { color: var(--muted); }
+
+  .filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; }
+  .filter-chip {
+    flex-shrink: 0; padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--muted); cursor: pointer;
+    white-space: nowrap;
+  }
+  .filter-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  select.sort-select {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 8px 10px; font-size: 12.5px; font-family: inherit; margin-bottom: 14px;
+  }
+
+  /* ── ORDER CARD ── */
+  .order-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 15px; margin-bottom: 11px; cursor: pointer; transition: border-color 0.15s;
+  }
+  .order-card:active { border-color: var(--muted); }
+  .order-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 9px; }
+  .order-number { font-size: 11.5px; font-weight: 700; color: var(--muted); background: var(--surface2); padding: 2px 8px; border-radius: 8px; }
+  .order-name { font-size: 15.5px; font-weight: 700; margin-top: 5px; }
+  .order-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .status-pill { font-size: 10.5px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+  .s-pending    { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .s-cutting    { background: rgba(18,163,212,0.15); color: var(--accent); }
+  .s-scheduled  { background: rgba(34,197,94,0.15);  color: var(--green); }
+  .s-dispatched { background: rgba(100,100,120,0.15); color: var(--muted); }
+  .s-cancelled  { background: rgba(239,68,68,0.15); color: var(--red); }
+  .s-needs-pricing { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* ── SUMMARY STRIP ── */
+  .summary-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
+  .summary-chip {
+    flex-shrink: 0; min-width: 92px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 12px;
+  }
+  .summary-chip .n { font-size: 18px; font-weight: 800; }
+  .summary-chip .l { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+  .summary-chip.red .n { color: var(--red); }
+  .summary-chip.green .n { color: var(--green); }
+  .summary-chip.gold .n { color: var(--gold); }
+
+  .price-row { display: flex; gap: 18px; margin-top: 11px; flex-wrap: wrap; }
+  .price-box .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .price-box .v { font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .price-box.profit .v { color: var(--green); }
+
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 4px; margin-top: 12px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.4s; }
+
+  .empty { text-align: center; padding: 60px 24px; color: var(--muted); }
+  .empty .icon { font-size: 46px; margin-bottom: 12px; }
+  .empty h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .empty p { font-size: 13px; line-height: 1.6; }
+
+  /* ── TABLES ── */
+  .rank-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .rank-table th {
+    text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--border);
+  }
+  .rank-table td { padding: 11px 10px; border-bottom: 1px solid var(--border); }
+  .rank-table tr:last-child td { border-bottom: none; }
+  .rank-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rank-name { font-weight: 700; }
+  .rank-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; margin-bottom: 18px; }
+
+  /* ── CHARTS ── */
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .chart-card h4 { font-size: 12.5px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+  .chart-card svg { width: 100%; height: auto; display: block; }
+  .chart-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 30px 0; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 50;
+    align-items: flex-end; justify-content: center; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 20px 20px 0 0; padding: 22px 20px 32px; width: 100%; max-width: 480px; border-top: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 18px; }
+  .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .modal .modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+
+  .field { margin-bottom: 14px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; }
+  .field input, .field select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 12px 13px; font-size: 14.5px; font-family: inherit; outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+
+  .readonly-box {
+    background: var(--surface2); border: 1px dashed var(--border); border-radius: 10px;
+    padding: 12px 13px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+  }
+  .readonly-box .l { font-size: 12.5px; color: var(--muted); }
+  .readonly-box .v { font-size: 14.5px; font-weight: 700; }
+  .readonly-box .v.green { color: var(--green); }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .btn { flex: 1; border: none; border-radius: 12px; padding: 14px; font-size: 14.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .btn-save { background: var(--accent); color: #fff; }
+  .btn-cancel { background: var(--surface2); color: var(--text); }
+  .btn-danger { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* PIN pad */
+  .pin-dots { display: flex; justify-content: center; gap: 14px; margin: 22px 0; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); }
+  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 260px; margin: 0 auto; }
+  .pin-key {
+    aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text); font-size: 20px; font-weight: 600; cursor: pointer;
+  }
+  .pin-key:active { background: var(--border); }
+  .pin-error { text-align: center; font-size: 12.5px; color: var(--red); height: 18px; margin-top: 10px; }
+
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 11px 20px; border-radius: 30px; font-size: 13px; font-weight: 600;
+    z-index: 100; box-shadow: 0 6px 24px rgba(0,0,0,0.4); animation: toastIn 0.25s;
+  }
+  @keyframes toastIn { from { opacity:0; transform: translate(-50%, 10px);} to {opacity:1; transform: translate(-50%,0);} }
+
+  .badge-tiny { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: var(--surface2); color: var(--muted); }
+  .locked-banner {
+    background: rgba(212,175,106,0.12); border: 1px solid rgba(212,175,106,0.35); color: var(--gold);
+    border-radius: 10px; padding: 10px 13px; font-size: 12px; margin-bottom: 14px; display: flex; gap: 8px; align-items: center;
+  }
+
+  @media (min-width: 640px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .content { max-width: 720px; margin: 0 auto; width: 100%; }
+    .bottom-nav { max-width: 720px; left: 50%; transform: translateX(-50%); border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-radius: 16px 16px 0 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="home" class="screen active">
+  <img src="icon-192.png" class="home-logo" alt="AUREA">
+  <div class="home-header">
+    <div class="tag">WD Textile · Partnership</div>
+    <h1>AUREA Partnership</h1>
+    <p>Live finance &amp; business analytics<br>sourced automatically from Factory Orders.</p>
+  </div>
+  <button class="btn-primary" onclick="openDashboard()">📊 Open Dashboard</button>
+  <div class="home-foot">
+    <div class="sync-status"><span class="sync-dot" id="home-sync-dot"></span><span id="home-sync-text">Connecting…</span></div>
+    <button onclick="openPinModal(null)" style="margin-top:10px;">Admin access</button>
+  </div>
+</div>
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<div id="dashboard-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goHome()">←</button>
+    <div class="title">Dashboard<small id="dash-month-label">—</small></div>
+    <button class="icon-btn" onclick="isAdmin ? openScreen('settings-screen') : openPinModal(()=>openScreen('settings-screen'))">⚙</button>
+  </div>
+  <div class="content" id="dashboard-content">
+    <!-- KPI cards injected here -->
+  </div>
+</div>
+
+<!-- ══════════════ ORDERS ══════════════ -->
+<div id="orders-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goHome()">←</button>
+    <div class="title">Orders<small id="orders-count-label">—</small></div>
+    <button class="icon-btn" id="admin-lock-btn" onclick="toggleAdminFromOrders()">🔒</button>
+  </div>
+  <div class="content">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="order-search" placeholder="Search order, customer, product, status…" oninput="onSearchInput()">
+    </div>
+    <div class="filter-row" id="status-filter-row"></div>
+    <select class="sort-select" id="sort-select" onchange="onSortChange()">
+      <option value="date_desc">Newest first</option>
+      <option value="date_asc">Oldest first</option>
+      <option value="profit_desc">Profit: high to low</option>
+      <option value="profit_asc">Profit: low to high</option>
+      <option value="selling_desc">Selling price: high to low</option>
+      <option value="dispatch_asc">Dispatch date: soonest</option>
+      <option value="customer_az">Customer: A–Z</option>
+    </select>
+    <div id="orders-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ORDER DETAIL ══════════════ -->
+<div id="detail-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" onclick="openScreen('orders-screen')">←</button>
+    <div class="title" id="detail-title">Order</div>
+    <button class="icon-btn" id="detail-edit-btn" onclick="onEditPricing()">✎</button>
+  </div>
+  <div class="content" id="detail-content"></div>
+</div>
+
+<!-- ══════════════ ANALYTICS ══════════════ -->
+<div id="analytics-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goHome()">←</button>
+    <div class="title">Analytics<small>Customers &amp; products, current month</small></div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="content" id="analytics-content"></div>
+</div>
+
+<!-- ══════════════ REPORTS ══════════════ -->
+<div id="reports-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goHome()">←</button>
+    <div class="title">Reports<small>Monthly business summary</small></div>
+    <button class="icon-btn" onclick="isAdmin ? exportMenu() : openPinModal(exportMenu)">⬇</button>
+  </div>
+  <div class="content">
+    <select class="sort-select" id="report-month-select" style="width:100%;" onchange="renderReports()"></select>
+    <div id="reports-content"></div>
+  </div>
+</div>
+
+<!-- ══════════════ SETTINGS ══════════════ -->
+<div id="settings-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goHome()">←</button>
+    <div class="title">Settings<small>Admin</small></div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="content" id="settings-content"></div>
+</div>
+
+<!-- ══════════════ BOTTOM NAV ══════════════ -->
+<div class="bottom-nav" id="bottom-nav" style="display:none;">
+  <button class="nav-item" data-target="dashboard-screen" onclick="openScreen('dashboard-screen')"><span class="ic">📊</span>Dashboard</button>
+  <button class="nav-item" data-target="orders-screen" onclick="openScreen('orders-screen')"><span class="ic">📦</span>Orders</button>
+  <button class="nav-item" data-target="analytics-screen" onclick="openScreen('analytics-screen')"><span class="ic">📈</span>Analytics</button>
+  <button class="nav-item" data-target="reports-screen" onclick="openScreen('reports-screen')"><span class="ic">🗂</span>Reports</button>
+</div>
+
+<!-- ══════════════ PIN MODAL ══════════════ -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 style="text-align:center;">Admin Access</h3>
+    <p class="modal-sub" style="text-align:center;">Enter the 4-digit admin PIN</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button><button class="pin-key" onclick="pinKey('2')">2</button><button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button><button class="pin-key" onclick="pinKey('5')">5</button><button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button><button class="pin-key" onclick="pinKey('8')">8</button><button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="closeModal('pin-modal')" style="color:var(--muted);">✕</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button><button class="pin-key" onclick="pinDel()">⌫</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PRICING / OVERLAY EDIT MODAL ══════════════ -->
+<div class="modal-overlay" id="pricing-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Order Pricing &amp; Details</h3>
+    <p class="modal-sub">Admin only. Changes to Quantity, Selling Price, Cost Price, Dispatch Date &amp; Remarks sync back to Factory Orders.</p>
+    <div class="field"><label>Customer Name</label><input id="pf-customer" placeholder="e.g. Sharma Textiles"></div>
+    <div class="field-row">
+      <div class="field"><label>Product Name</label><input id="pf-product" placeholder="e.g. Fusing Tape"></div>
+      <div class="field"><label>Category</label><input id="pf-category" placeholder="e.g. Interlining"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Size</label><input id="pf-size" placeholder="e.g. 40mm"></div>
+      <div class="field"><label>Colour</label><input id="pf-colour" placeholder="e.g. White"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Quantity (pcs)</label><input id="pf-qty" type="number" min="0" oninput="previewCost()"></div>
+      <div class="field"><label>Dispatch Date</label><input id="pf-dispatch" type="date"></div>
+    </div>
+    <div class="field"><label>Selling Price (₹)</label><input id="pf-selling" type="number" step="0.01" min="0" placeholder="0.00" oninput="onSellingChanged()"></div>
+    <div class="field">
+      <label>Cost Price (₹) <span id="pf-cost-mode" style="text-transform:none;font-weight:500;color:var(--muted);"></span></label>
+      <input id="pf-cost" type="number" step="0.01" min="0" placeholder="0.00" oninput="onCostManualEdit()">
+    </div>
+    <button class="doc-btn-link" onclick="applyAutoSuggestion()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;margin:-8px 0 12px;padding:0;">🔄 Use Auto-Suggested Cost Price</button>
+    <div class="readonly-box"><span class="l">Profit / Piece</span><span class="v green" id="pf-profit-piece">—</span></div>
+    <div class="readonly-box"><span class="l">Total Profit</span><span class="v green" id="pf-profit-total">—</span></div>
+    <div class="field"><label>Remarks</label><input id="pf-remarks" placeholder="Optional notes for this order"></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal('pricing-modal')">Cancel</button>
+      <button class="btn btn-save" onclick="savePricing()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-root"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════════════════
+const FIRM = "wd"; // AUREA Partnership tracks WD Textile orders only
+
+// Factory Orders cloud bin — READ ONLY. Same bin the Factory Orders app writes to.
+// AUREA never calls PUT on this bin (one-way sync: Factory Orders → AUREA).
+const FACTORY_BIN_ID  = "6a429e40da38895dfe112279";
+const FACTORY_API_KEY = "$2a$10$yS5dvViBUL3w5szoFGeafOKkRIUg1eiGHXkcjAswem1nQahvF9i6.";
+
+// AUREA's own cloud bin — stores Partnership-only data (pricing overlay, hidden
+// cost engine state). Create a FREE bin at https://jsonbin.io, then paste its
+// Bin ID and X-Master-Key below. Until filled in, AUREA runs on local storage
+// only on this device (fine for solo testing, but won't sync across devices).
+const AUREA_BIN_ID  = "";
+const AUREA_API_KEY = "";
+
+// Admin PIN — change this before deploying.
+const ADMIN_PIN = "1234";
+
+const LOCAL_KEY = "aurea_partnership_v1";
+const SYNC_MS = 10000;
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════
+let factoryOrders = [];          // raw orders from Factory Orders (firm = wd)
+let overlay = { orders: {}, windows: {} }; // AUREA-only data, keyed by order id
+let merged = [];                 // computed, display-ready orders
+let isAdmin = false;
+let pinBuffer = "";
+let pinCallback = null;
+let currentOrderId = null;
+let editingOrderId = null;
+let currentScreen = "home";
+let syncTimer = null;
+let lastMergedHash = "";
+let lastFactoryOk = null;
+
+let uiState = {
+  search: "",
+  statusFilter: "all",
+  sort: "date_desc",
+  reportMonth: null // "YYYY-MM"
+};
+
+const STATUSES = ["pending", "cutting", "scheduled", "dispatched", "cancelled"];
+const STATUS_LABELS = { pending: "Pending", cutting: "Cutting", scheduled: "Scheduled", dispatched: "Dispatched", cancelled: "Cancelled" };
+let usingAutoCost = true; // tracks whether the Cost Price field currently reflects the auto suggestion or a manual edit
+let suppressCostEvent = false;
+
+// ══════════════════════════════════════════════════════════════════════════
+// LOCAL STORAGE
+// ══════════════════════════════════════════════════════════════════════════
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    if (raw) overlay = JSON.parse(raw);
+  } catch (e) {}
+  if (!overlay.orders) overlay.orders = {};
+  if (!overlay.windows) overlay.windows = {};
+}
+function saveLocal() {
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(overlay));
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CLOUD SYNC
+// Factory Orders bin -> GET always. PUT only happens when Admin edits an
+// operational field in AUREA (pushFactoryPatch below) — Partner actions never
+// write here, and AUREA never touches status/cuttingDate/dispatchedOn/docs,
+// those remain fully owned by Factory Orders.
+// AUREA bin -> GET + PUT (this app's own pricing/overlay + hidden costing data).
+// ══════════════════════════════════════════════════════════════════════════
+async function pullFactoryOrders() {
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${FACTORY_BIN_ID}/latest`, {
+      headers: { "X-Master-Key": FACTORY_API_KEY }
+    });
+    const d = await r.json();
+    if (d && d.record && Array.isArray(d.record[FIRM])) {
+      factoryOrders = d.record[FIRM];
+      setSyncStatus(true);
+      return true;
+    }
+    setSyncStatus(false);
+    return false;
+  } catch (e) {
+    setSyncStatus(false);
+    return false;
+  }
+}
+
+async function pullOverlay() {
+  if (!AUREA_BIN_ID || !AUREA_API_KEY) return;
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${AUREA_BIN_ID}/latest`, {
+      headers: { "X-Master-Key": AUREA_API_KEY }
+    });
+    const d = await r.json();
+    if (d && d.record) {
+      overlay = d.record;
+      if (!overlay.orders) overlay.orders = {};
+      if (!overlay.windows) overlay.windows = {};
+      saveLocal();
+    }
+  } catch (e) {}
+}
+
+async function pushOverlay() {
+  saveLocal();
+  if (!AUREA_BIN_ID || !AUREA_API_KEY) return;
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${AUREA_BIN_ID}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "X-Master-Key": AUREA_API_KEY },
+      body: JSON.stringify(overlay)
+    });
+  } catch (e) {}
+}
+
+// Two-way sync (Admin only): pulls the FRESHEST copy of the Factory Orders bin
+// right before writing, then patches only this one order's operational fields
+// onto it. This narrows — but does not eliminate — the race window where a
+// Manager in Factory Orders and Admin in AUREA save at nearly the same moment;
+// whichever PUT lands last still wins on any field neither side just patched.
+async function pushFactoryPatch(orderId, patch) {
+  if (!FACTORY_BIN_ID || !FACTORY_API_KEY) return;
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${FACTORY_BIN_ID}/latest`, {
+      headers: { "X-Master-Key": FACTORY_API_KEY }
+    });
+    const d = await r.json();
+    if (!d || !d.record || !Array.isArray(d.record[FIRM])) return;
+    const rec = d.record;
+    const idx = rec[FIRM].findIndex(o => o.id === orderId);
+    if (idx === -1) { showToast('Order no longer exists in Factory Orders'); return; }
+    Object.assign(rec[FIRM][idx], patch);
+    await fetch(`https://api.jsonbin.io/v3/b/${FACTORY_BIN_ID}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "X-Master-Key": FACTORY_API_KEY },
+      body: JSON.stringify(rec)
+    });
+    factoryOrders = rec[FIRM]; // reflect immediately, don't wait for next poll
+  } catch (e) {
+    showToast('Could not sync to Factory Orders — will retry next cycle');
+  }
+}
+
+function setSyncStatus(ok) {
+  if (lastFactoryOk === ok) return;
+  lastFactoryOk = ok;
+  const dot = document.getElementById('home-sync-dot');
+  const txt = document.getElementById('home-sync-text');
+  if (!dot) return;
+  dot.classList.toggle('offline', !ok);
+  txt.textContent = ok ? 'Synced with Factory Orders' : 'Offline — showing last known data';
+}
+
+async function syncCycle() {
+  await pullOverlay();
+  const ok = await pullFactoryOrders();
+  if (ok) {
+    recompute();
+    silentRerender();
+  }
+}
+
+function startSync() {
+  syncCycle();
+  if (syncTimer) clearInterval(syncTimer);
+  syncTimer = setInterval(syncCycle, SYNC_MS);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// COST PRICE ENGINE
+// Cost Price is derived, never entered manually. Selling Price is entered by
+// Admin (Factory Orders carries no price data). Reduction % and the hidden
+// Production Cost Index are generated once per 15-day production window and
+// persisted — never regenerated on refresh or sync.
+// ══════════════════════════════════════════════════════════════════════════
+function priceBracket(sp) {
+  if (sp < 100)  return { key: "b1", min: 9,    max: 11   };
+  if (sp <= 130) return { key: "b2", min: 10.5, max: 13   };
+  if (sp <= 150) return { key: "b3", min: 12,   max: 15   };
+  if (sp <= 250) return { key: "b4", min: 15,   max: 17   };
+  return               { key: "b5", min: 17,   max: 19   };
+}
+
+// 15-day production window key from a date string, e.g. "2026-07-A" (1-15) or "2026-07-B" (16-end)
+function windowKeyFor(dateStr) {
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const half = d.getDate() <= 15 ? "A" : "B";
+  return `${y}-${m}-${half}`;
+}
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function round2(n) { return Math.round(n * 100) / 100; }
+
+// Returns (and persists) the hidden base reduction % for a given window+price bracket.
+function getWindowBase(winKey, bracket) {
+  const storeKey = `${winKey}|${bracket.key}`;
+  if (overlay.windows[storeKey] != null) return overlay.windows[storeKey];
+  const base = round2(rand(bracket.min, bracket.max));
+  overlay.windows[storeKey] = base;
+  return base;
+}
+
+// Computes/reuses reduction % + cost price + profit for one order's overlay record.
+// prodRefDate = reference date used to determine the production window (cuttingDate if set, else order date).
+// Computes the algorithm's suggested Cost Price for a given rec/prodRefDate WITHOUT
+// mutating anything — used to show a live "suggested" preview in the pricing modal.
+function suggestCost(sp, prodRefDate, rec) {
+  const bracket = priceBracket(sp);
+  const winKey = windowKeyFor(prodRefDate);
+  let pct = (rec && rec.windowKey === winKey && rec.priceBracket === bracket.key && rec.reductionPercent)
+    ? rec.reductionPercent
+    : getWindowBase(winKey, bracket);
+  return round2(sp * (1 - pct / 100));
+}
+
+function ensureCosting(rec, prodRefDate) {
+  const sp = Number(rec.sellingPrice);
+  if (!sp || sp <= 0) return; // no selling price entered yet — nothing to compute
+
+  // Admin manually overrode Cost Price for this order — never regenerate it
+  // automatically, on sync or otherwise. Only Profit is kept in sync with it.
+  if (rec.costManual) {
+    rec.costPrice = round2(Number(rec.costPrice) || 0);
+    rec.profit = round2(sp - rec.costPrice);
+    return;
+  }
+
+  const bracket = priceBracket(sp);
+  const winKey = windowKeyFor(prodRefDate);
+
+  const needsNew = !rec.reductionPercent || rec.windowKey !== winKey || rec.priceBracket !== bracket.key;
+
+  if (needsNew) {
+    const base = getWindowBase(winKey, bracket);
+    let variation = rand(-0.2, 0.2);
+    // occasionally allow up to the ±0.30 max, still small
+    if (Math.random() < 0.15) variation = rand(-0.3, 0.3);
+    let pct = round2(base + variation);
+    pct = Math.min(bracket.max, Math.max(bracket.min, pct));
+    rec.reductionPercent = pct;   // HIDDEN — never rendered to Partner UI
+    rec.pci = base;               // HIDDEN — internal Production Cost Index
+    rec.windowKey = winKey;
+    rec.priceBracket = bracket.key;
+  }
+
+  rec.costPrice = round2(sp * (1 - rec.reductionPercent / 100));
+  rec.profit = round2(sp - rec.costPrice);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MERGE Factory Orders + Overlay -> display-ready order list
+// ══════════════════════════════════════════════════════════════════════════
+function dispatchDateOf(o) {
+  if (o.dispatchOverride) return o.dispatchOverride; // Admin-set override, synced from AUREA
+  const d = new Date(o.date);
+  d.setDate(d.getDate() + Number(o.days || 0));
+  if (d.getDay() === 1) d.setDate(d.getDate() + 1); // never dispatch Monday
+  return d.toISOString().split("T")[0];
+}
+
+function recompute() {
+  merged = factoryOrders.map((o, idx) => {
+    let rec = overlay.orders[o.id];
+    if (!rec) {
+      rec = { customerName: "", productName: "", category: "", size: "", colour: "", sellingPrice: null };
+      overlay.orders[o.id] = rec;
+    }
+    const prodRef = o.cuttingDate || o.date;
+    if (rec.sellingPrice) ensureCosting(rec, prodRef);
+
+    const qty = Number(o.qty) || 0;
+    const sp = rec.sellingPrice || null;
+    const cp = rec.sellingPrice ? rec.costPrice : null;
+    const profitPerPiece = (sp != null && cp != null) ? round2(sp - cp) : null;
+
+    return {
+      id: o.id,
+      orderNumber: idx + 1,
+      name: o.name,
+      qty,
+      orderDate: o.date,
+      productionStartDate: o.cuttingDate || null,
+      expectedDispatchDate: dispatchDateOf(o),
+      actualDispatchDate: o.dispatchedOn || null,
+      status: o.status,
+      remarks: o.remarks || "",
+      customerName: rec.customerName || "",
+      productName: rec.productName || o.name,
+      category: rec.category || "",
+      size: rec.size || "",
+      colour: rec.colour || "",
+      sellingPrice: sp,
+      costPrice: cp,
+      costManual: !!rec.costManual,
+      profitPerPiece,                                             // per-piece profit
+      profit: profitPerPiece,                                     // kept for backward-compat references
+      turnoverTotal: sp != null ? round2(sp * qty) : null,        // Selling Price × Quantity
+      costTotal: cp != null ? round2(cp * qty) : null,            // Cost Price × Quantity
+      totalProfit: profitPerPiece != null ? round2(profitPerPiece * qty) : null, // (SP − CP) × Quantity
+      hasPricing: !!rec.sellingPrice
+    };
+  });
+  pushOverlay(); // persist any freshly-computed costing (silent, no UI interrupt)
+}
+
+function dataHash() {
+  return JSON.stringify(merged.map(o => [o.id, o.status, o.qty, o.sellingPrice, o.costPrice, o.customerName, o.productName, o.remarks, o.expectedDispatchDate]));
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MONTH HELPERS — dashboard always reflects the CURRENT month automatically
+// ══════════════════════════════════════════════════════════════════════════
+function currentMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+function monthLabel(key) {
+  const [y, m] = key.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+}
+function ordersInMonth(key) {
+  return merged.filter(o => o.orderDate && o.orderDate.startsWith(key) && o.hasPricing);
+}
+function allMonthsWithData() {
+  const set = new Set(merged.filter(o => o.orderDate).map(o => o.orderDate.slice(0, 7)));
+  set.add(currentMonthKey());
+  return Array.from(set).sort().reverse();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════════════════
+function openScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentScreen = id;
+  document.getElementById('bottom-nav').style.display =
+    (id === 'home') ? 'none' : 'flex';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.target === id));
+
+  if (id === 'dashboard-screen') renderDashboard();
+  if (id === 'orders-screen') renderOrdersScreen();
+  if (id === 'analytics-screen') renderAnalytics();
+  if (id === 'reports-screen') renderReportsScreen();
+  if (id === 'settings-screen') renderSettings();
+  window.scrollTo(0, 0);
+}
+function openDashboard() { openScreen('dashboard-screen'); }
+function goHome() { openScreen('home'); }
+
+// Silent re-render: only touches the currently visible screen, preserves scroll.
+function silentRerender() {
+  const h = dataHash();
+  if (h === lastMergedHash) return;
+  lastMergedHash = h;
+  const scrollY = window.scrollY;
+  if (currentScreen === 'dashboard-screen') renderDashboard();
+  if (currentScreen === 'orders-screen') renderOrdersScreen(true);
+  if (currentScreen === 'analytics-screen') renderAnalytics();
+  if (currentScreen === 'reports-screen') renderReports();
+  if (currentScreen === 'detail-screen' && currentOrderId) {
+    if (getMergedOrder(currentOrderId)) renderDetail(currentOrderId, true);
+    else openScreen('orders-screen'); // order deleted upstream in Factory Orders
+  }
+  window.scrollTo(0, scrollY);
+}
+
+function getMergedOrder(id) { return merged.find(o => o.id === id); }
+
+// ══════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════════════════
+function renderDashboard() {
+  const mKey = currentMonthKey();
+  document.getElementById('dash-month-label').textContent = monthLabel(mKey);
+  const list = ordersInMonth(mKey); // priced orders this month
+  const allThisMonth = merged.filter(o => o.orderDate && o.orderDate.startsWith(mKey));
+
+  // Turnover / Cost / Profit now use actual quantities: SP×Qty, CP×Qty, (SP−CP)×Qty
+  const turnover = sum(list, 'turnoverTotal');
+  const cost = sum(list, 'costTotal');
+  const profit = sum(list, 'totalProfit');
+  const pieces = sum(list, 'qty');
+  const ordersCount = allThisMonth.length;
+  const pricedCount = list.length;
+
+  const avgSP = pricedCount ? sum(list, 'sellingPrice') / pricedCount : 0;   // avg per-unit selling price
+  const avgCP = pricedCount ? sum(list, 'costPrice') / pricedCount : 0;      // avg per-unit cost price
+  const avgProfitOrder = pricedCount ? profit / pricedCount : 0;             // avg total profit per order
+  const avgProfitPiece = pieces ? profit / pieces : 0;                      // avg profit per piece across the month
+
+  // Order Completion Summary (live, across ALL orders, not month-scoped)
+  const today = todayStr();
+  const completed = merged.filter(o => o.status === 'dispatched').length;
+  const pendingCount = merged.filter(o => o.status === 'pending').length;
+  const cancelledCount = merged.filter(o => o.status === 'cancelled').length;
+  const inProduction = merged.filter(o => o.status === 'cutting').length;
+  const readyForDispatch = merged.filter(o => o.status === 'scheduled').length;
+  const dispatchToday = merged.filter(o => o.status !== 'dispatched' && o.status !== 'cancelled' && o.expectedDispatchDate === today).length;
+
+  const statusCounts = { pending: 0, cutting: 0, scheduled: 0, dispatched: 0, cancelled: 0 };
+  allThisMonth.forEach(o => statusCounts[o.status] = (statusCounts[o.status] || 0) + 1);
+
+  const needsPricing = allThisMonth.filter(o => !o.hasPricing).length;
+
+  const el = document.getElementById('dashboard-content');
+  el.innerHTML = `
+    <div class="summary-strip">
+      <div class="summary-chip green"><div class="n">${completed}</div><div class="l">Completed</div></div>
+      <div class="summary-chip"><div class="n">${pendingCount}</div><div class="l">Pending</div></div>
+      <div class="summary-chip red"><div class="n">${cancelledCount}</div><div class="l">Cancelled</div></div>
+      <div class="summary-chip"><div class="n">${inProduction}</div><div class="l">In Production</div></div>
+      <div class="summary-chip"><div class="n">${readyForDispatch}</div><div class="l">Ready to Dispatch</div></div>
+      <div class="summary-chip ${dispatchToday?'gold':''}"><div class="n">${dispatchToday}</div><div class="l">Dispatch Today</div></div>
+    </div>
+    ${needsPricing ? `<div class="locked-banner">💰 ${needsPricing} order${needsPricing>1?'s':''} this month still need Selling Price entered. ${isAdmin ? 'Open an order to add it.' : 'Ask Admin to add pricing.'}</div>` : ''}
+    <div class="kpi-grid">
+      <div class="kpi-card wide accent"><div class="lbl">Total Turnover</div><div class="val">${inr(turnover)}</div><div class="sub">${monthLabel(mKey)} · Selling Price × Qty</div></div>
+      <div class="kpi-card"><div class="lbl">Manufacturing Cost</div><div class="val">${inr(cost)}</div></div>
+      <div class="kpi-card green"><div class="lbl">Total Profit</div><div class="val">${inr(profit)}</div></div>
+      <div class="kpi-card"><div class="lbl">Total Orders</div><div class="val">${ordersCount}</div></div>
+      <div class="kpi-card"><div class="lbl">Pieces Produced</div><div class="val">${pieces.toLocaleString()}</div></div>
+      <div class="kpi-card"><div class="lbl">Avg Selling Price</div><div class="val">${inr(avgSP)}</div></div>
+      <div class="kpi-card"><div class="lbl">Avg Cost Price</div><div class="val">${inr(avgCP)}</div></div>
+      <div class="kpi-card"><div class="lbl">Avg Profit / Order</div><div class="val">${inr(avgProfitOrder)}</div></div>
+      <div class="kpi-card"><div class="lbl">Avg Profit / Piece</div><div class="val">${inr(avgProfitPiece)}</div></div>
+      <div class="kpi-card gold"><div class="lbl">Current Month</div><div class="val" style="font-size:15px;">${monthLabel(mKey)}</div></div>
+    </div>
+
+    <div class="section-title">Order Status <span class="hint">this month</span></div>
+    <div class="chart-card">${statusDonut(statusCounts)}</div>
+
+    <div class="section-title">Turnover &amp; Profit Trend <span class="hint">last 6 months</span></div>
+    <div class="chart-card">${trendChart()}</div>
+  `;
+}
+
+function sum(list, field) { return round2(list.reduce((a, o) => a + (Number(o[field]) || 0), 0)); }
+function inr(n) { return "₹" + (Math.round(n * 100) / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 }); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+// ── lightweight inline SVG charts (no external chart library needed) ──────
+function statusDonut(counts) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  if (!total) return `<div class="chart-empty">No orders yet this month</div>`;
+  const colors = { pending: '#f59e0b', cutting: '#12a3d4', scheduled: '#22c55e', dispatched: '#868ca8', cancelled: '#ef4444' };
+  let acc = 0;
+  const r = 60, cx = 80, cy = 80, circ = 2 * Math.PI * r;
+  let segs = '';
+  STATUSES.forEach(s => {
+    const v = counts[s] || 0;
+    if (!v) return;
+    const frac = v / total;
+    const dash = frac * circ;
+    segs += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[s]}" stroke-width="20"
+      stroke-dasharray="${dash} ${circ - dash}" stroke-dashoffset="${-acc}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    acc += dash;
+  });
+  let legend = STATUSES.map(s => `<div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-bottom:6px;">
+    <span style="width:9px;height:9px;border-radius:3px;background:${colors[s]};display:inline-block;"></span>${STATUS_LABELS[s]} — ${counts[s]||0}</div>`).join('');
+  return `<div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;">
+    <svg viewBox="0 0 160 160" width="140" height="140">${segs}<text x="80" y="85" text-anchor="middle" font-size="22" font-weight="800" fill="#f2f3f7">${total}</text></svg>
+    <div>${legend}</div></div>`;
+}
+
+function trendChart() {
+  const months = [];
+  const d = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const dt = new Date(d.getFullYear(), d.getMonth() - i, 1);
+    months.push(`${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`);
+  }
+  const turnovers = months.map(m => sum(ordersInMonth(m), 'turnoverTotal'));
+  const profits = months.map(m => sum(ordersInMonth(m), 'totalProfit'));
+  const maxV = Math.max(1, ...turnovers, ...profits);
+  const W = 300, H = 140, pad = 24;
+  const stepX = (W - pad * 2) / (months.length - 1);
+  const pts = (arr) => arr.map((v, i) => `${pad + i * stepX},${H - pad - (v / maxV) * (H - pad * 2)}`).join(' ');
+  const allZero = turnovers.every(v => v === 0);
+  if (allZero) return `<div class="chart-empty">Not enough priced orders yet to plot a trend</div>`;
+  return `<svg viewBox="0 0 ${W} ${H+22}">
+    <polyline points="${pts(turnovers)}" fill="none" stroke="#12a3d4" stroke-width="2.5"/>
+    <polyline points="${pts(profits)}" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+    ${months.map((m,i)=>`<text x="${pad+i*stepX}" y="${H+16}" font-size="9" fill="#868ca8" text-anchor="middle">${m.slice(5)}</text>`).join('')}
+  </svg>
+  <div style="display:flex;gap:16px;margin-top:6px;">
+    <span style="font-size:11px;color:var(--muted);"><span style="color:#12a3d4;">●</span> Turnover</span>
+    <span style="font-size:11px;color:var(--muted);"><span style="color:#22c55e;">●</span> Profit</span>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ORDERS LIST — search, filter, sort. State preserved across silent syncs.
+// ══════════════════════════════════════════════════════════════════════════
+function renderOrdersScreen(silent) {
+  document.getElementById('admin-lock-btn').textContent = isAdmin ? '🔓' : '🔒';
+  if (!silent) {
+    const row = document.getElementById('status-filter-row');
+    row.innerHTML = ['all', ...STATUSES].map(s =>
+      `<button class="filter-chip ${uiState.statusFilter===s?'active':''}" onclick="setStatusFilter('${s}', this)">${s==='all'?'All':STATUS_LABELS[s]}</button>`
+    ).join('');
+    document.getElementById('order-search').value = uiState.search;
+    document.getElementById('sort-select').value = uiState.sort;
+  }
+  renderOrdersList();
+}
+
+function setStatusFilter(s, btn) {
+  uiState.statusFilter = s;
+  document.querySelectorAll('#status-filter-row .filter-chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderOrdersList();
+}
+function onSearchInput() {
+  uiState.search = document.getElementById('order-search').value.toLowerCase();
+  renderOrdersList();
+}
+function onSortChange() {
+  uiState.sort = document.getElementById('sort-select').value;
+  renderOrdersList();
+}
+function toggleAdminFromOrders() {
+  if (isAdmin) { isAdmin = false; renderOrdersScreen(); showToast('Admin locked'); }
+  else openPinModal(() => renderOrdersScreen());
+}
+
+function filteredSortedOrders() {
+  let list = merged.slice();
+  if (uiState.statusFilter !== 'all') list = list.filter(o => o.status === uiState.statusFilter);
+  if (uiState.search) {
+    const q = uiState.search;
+    list = list.filter(o =>
+      (o.name||'').toLowerCase().includes(q) ||
+      (o.customerName||'').toLowerCase().includes(q) ||
+      (o.productName||'').toLowerCase().includes(q) ||
+      (o.status||'').toLowerCase().includes(q) ||
+      (o.remarks||'').toLowerCase().includes(q) ||
+      String(o.orderNumber).includes(q)
+    );
+  }
+  const cmp = {
+    date_desc: (a,b) => (b.orderDate||'').localeCompare(a.orderDate||''),
+    date_asc:  (a,b) => (a.orderDate||'').localeCompare(b.orderDate||''),
+    profit_desc: (a,b) => (b.totalProfit||0) - (a.totalProfit||0),
+    profit_asc:  (a,b) => (a.totalProfit||0) - (b.totalProfit||0),
+    selling_desc: (a,b) => (b.sellingPrice||0) - (a.sellingPrice||0),
+    dispatch_asc: (a,b) => (a.expectedDispatchDate||'').localeCompare(b.expectedDispatchDate||''),
+    customer_az: (a,b) => (a.customerName||'zzz').localeCompare(b.customerName||'zzz'),
+  }[uiState.sort];
+  list.sort(cmp);
+  return list;
+}
+
+function renderOrdersList() {
+  const list = filteredSortedOrders();
+  document.getElementById('orders-count-label').textContent = merged.length + (merged.length===1?' order':' orders');
+  const el = document.getElementById('orders-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">📦</div><h3>No orders found</h3><p>Try a different search or filter.</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(orderCardHtml).join('');
+}
+
+function orderCardHtml(o) {
+  const badgeClass = o.hasPricing ? `s-${o.status}` : 's-needs-pricing';
+  const badgeText = o.hasPricing ? STATUS_LABELS[o.status] : 'Needs Pricing';
+  const prog = { pending:0, cutting:33, scheduled:66, dispatched:100, cancelled:100 }[o.status] || 0;
+  return `
+  <div class="order-card" onclick="openDetail('${o.id}')">
+    <div class="order-top">
+      <div>
+        <span class="order-number">Order #${o.orderNumber}</span>
+        <div class="order-name">${escapeHtml(o.customerName || o.name)}</div>
+        <div class="order-sub">${escapeHtml(o.productName)}${o.size?(' · '+escapeHtml(o.size)):''} · ${o.qty.toLocaleString()} pcs</div>
+      </div>
+      <span class="status-pill ${badgeClass}">${badgeText}</span>
+    </div>
+    ${o.hasPricing ? `
+    <div class="price-row">
+      <div class="price-box"><div class="l">Selling</div><div class="v">${inr(o.sellingPrice)}</div></div>
+      <div class="price-box"><div class="l">Cost</div><div class="v">${inr(o.costPrice)}</div></div>
+      <div class="price-box profit"><div class="l">Profit / Pc</div><div class="v">${inr(o.profitPerPiece)}</div></div>
+      <div class="price-box profit"><div class="l">Total Profit</div><div class="v">${inr(o.totalProfit)}</div></div>
+    </div>` : ''}
+    <div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div>
+  </div>`;
+}
+
+function escapeHtml(s) { return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ══════════════════════════════════════════════════════════════════════════
+// ORDER DETAIL
+// ══════════════════════════════════════════════════════════════════════════
+function openDetail(id) {
+  currentOrderId = id;
+  openScreen('detail-screen');
+  renderDetail(id);
+}
+
+function renderDetail(id, silent) {
+  const o = getMergedOrder(id);
+  if (!o) return;
+  document.getElementById('detail-title').textContent = `Order #${o.orderNumber}`;
+  document.getElementById('detail-edit-btn').style.display = isAdmin ? 'flex' : 'none';
+
+  const prog = { pending:0, cutting:33, scheduled:66, dispatched:100, cancelled:100 }[o.status] || 0;
+  const el = document.getElementById('detail-content');
+  el.innerHTML = `
+    <div class="order-card" style="cursor:default;">
+      <div class="order-top">
+        <div>
+          <div class="order-name" style="font-size:19px;">${escapeHtml(o.customerName || 'Customer not set')}</div>
+          <div class="order-sub">${escapeHtml(o.productName)}</div>
+        </div>
+        <span class="status-pill ${o.hasPricing ? 's-'+o.status : 's-needs-pricing'}">${o.hasPricing ? STATUS_LABELS[o.status] : 'Needs Pricing'}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div>
+    </div>
+
+    ${o.hasPricing ? `
+    <div class="kpi-grid" style="margin-top:14px;">
+      <div class="kpi-card"><div class="lbl">Selling Price</div><div class="val">${inr(o.sellingPrice)}</div></div>
+      <div class="kpi-card"><div class="lbl">Cost Price</div><div class="val">${inr(o.costPrice)}${o.costManual ? ' <span class=\"badge-tiny\">manual</span>' : ''}</div></div>
+      <div class="kpi-card"><div class="lbl">Profit / Piece</div><div class="val" style="font-size:15px;">${inr(o.profitPerPiece)}</div></div>
+      <div class="kpi-card wide green"><div class="lbl">Total Profit</div><div class="val">${inr(o.totalProfit)}</div><div class="sub">${inr(o.profitPerPiece)} × ${o.qty.toLocaleString()} pcs</div></div>
+    </div>` : `<div class="locked-banner" style="margin-top:14px;">💰 No Selling Price yet. ${isAdmin ? 'Tap ✎ above to add pricing.' : 'Ask Admin to add pricing for this order.'}</div>`}
+
+    <div class="section-title">Order Details</div>
+    <div class="rank-wrap"><table class="rank-table" style="width:100%;">
+      <tr><td>Category</td><td class="num">${escapeHtml(o.category)||'—'}</td></tr>
+      <tr><td>Size</td><td class="num">${escapeHtml(o.size)||'—'}</td></tr>
+      <tr><td>Colour</td><td class="num">${escapeHtml(o.colour)||'—'}</td></tr>
+      <tr><td>Quantity</td><td class="num">${o.qty.toLocaleString()} pieces</td></tr>
+      <tr><td>Order Date</td><td class="num">${fmt(o.orderDate)}</td></tr>
+      <tr><td>Production Start</td><td class="num">${o.productionStartDate ? fmt(o.productionStartDate) : 'Not started'}</td></tr>
+      <tr><td>Expected Dispatch</td><td class="num">${fmt(o.expectedDispatchDate)}</td></tr>
+      <tr><td>Actual Dispatch</td><td class="num">${o.actualDispatchDate ? fmt(o.actualDispatchDate) : '—'}</td></tr>
+    </table></div>
+
+    ${o.remarks ? `<div class="section-title">Remarks</div><div class="rank-wrap" style="padding:13px;font-size:13px;">${escapeHtml(o.remarks)}</div>` : ''}
+
+    <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px;">Status is managed in Factory Orders. Admin-edited fields here sync back automatically.</p>
+  `;
+}
+
+function fmt(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' });
+}
+
+function onEditPricing() {
+  if (!isAdmin) { openPinModal(() => onEditPricing()); return; }
+  const o = getMergedOrder(currentOrderId);
+  if (!o) return;
+  editingOrderId = o.id;
+  document.getElementById('pf-customer').value = o.customerName || '';
+  document.getElementById('pf-product').value = o.productName || '';
+  document.getElementById('pf-category').value = o.category || '';
+  document.getElementById('pf-size').value = o.size || '';
+  document.getElementById('pf-colour').value = o.colour || '';
+  document.getElementById('pf-qty').value = o.qty || '';
+  document.getElementById('pf-dispatch').value = o.expectedDispatchDate || '';
+  document.getElementById('pf-remarks').value = o.remarks || '';
+  document.getElementById('pf-selling').value = o.sellingPrice || '';
+  document.getElementById('pf-cost').value = o.costPrice || '';
+  usingAutoCost = !o.costManual;
+  updateCostModeLabel();
+  previewProfitFields();
+  document.getElementById('pricing-modal').classList.add('open');
+}
+
+function updateCostModeLabel() {
+  document.getElementById('pf-cost-mode').textContent = usingAutoCost ? '(auto)' : '(manual override)';
+}
+
+// Selling Price changed — if the admin hasn't manually overridden Cost Price,
+// refresh the auto-suggested value; either way, refresh the profit preview.
+function onSellingChanged() {
+  if (usingAutoCost) applyAutoSuggestion(true);
+  else previewProfitFields();
+}
+
+function applyAutoSuggestion(silent) {
+  const sp = Number(document.getElementById('pf-selling').value);
+  if (!sp || sp <= 0) { document.getElementById('pf-cost').value = ''; previewProfitFields(); return; }
+  const o = getMergedOrder(editingOrderId);
+  const rec = overlay.orders[editingOrderId] || {};
+  const prodRef = (o && (o.productionStartDate || o.orderDate)) || todayStr();
+  const suggested = suggestCost(sp, prodRef, rec);
+  suppressCostEvent = true;
+  document.getElementById('pf-cost').value = suggested;
+  usingAutoCost = true;
+  updateCostModeLabel();
+  previewProfitFields();
+  if (!silent) showToast('Auto-suggested cost applied');
+}
+
+// Fires whenever the Cost Price field changes — distinguishes a real user edit
+// from our own programmatic fill (see applyAutoSuggestion / onSellingChanged).
+function onCostManualEdit() {
+  if (suppressCostEvent) { suppressCostEvent = false; return; }
+  usingAutoCost = false;
+  updateCostModeLabel();
+  previewProfitFields();
+}
+
+function previewProfitFields() {
+  const sp = Number(document.getElementById('pf-selling').value);
+  const cp = Number(document.getElementById('pf-cost').value);
+  const qty = Number(document.getElementById('pf-qty').value) || 0;
+  const pieceEl = document.getElementById('pf-profit-piece');
+  const totalEl = document.getElementById('pf-profit-total');
+  if (!sp || !cp) { pieceEl.textContent = '—'; totalEl.textContent = '—'; return; }
+  const perPiece = round2(sp - cp);
+  pieceEl.textContent = inr(perPiece);
+  totalEl.textContent = inr(round2(perPiece * qty));
+}
+
+async function savePricing() {
+  const o = getMergedOrder(editingOrderId);
+  if (!o) return;
+  const sp = Number(document.getElementById('pf-selling').value);
+  const cp = Number(document.getElementById('pf-cost').value);
+  const qty = Number(document.getElementById('pf-qty').value);
+  if (!sp || sp <= 0) { showToast('Enter a valid Selling Price'); return; }
+  if (!qty || qty <= 0) { showToast('Enter a valid Quantity'); return; }
+
+  const customerName = document.getElementById('pf-customer').value.trim();
+  const productName  = document.getElementById('pf-product').value.trim();
+  const category      = document.getElementById('pf-category').value.trim();
+  const size           = document.getElementById('pf-size').value.trim();
+  const colour         = document.getElementById('pf-colour').value.trim();
+  const dispatchOverride = document.getElementById('pf-dispatch').value || null;
+  const remarks         = document.getElementById('pf-remarks').value.trim();
+
+  let rec = overlay.orders[editingOrderId];
+  if (!rec) rec = overlay.orders[editingOrderId] = {};
+  rec.customerName = customerName;
+  rec.productName  = productName;
+  rec.category      = category;
+  rec.size           = size;
+  rec.colour         = colour;
+  rec.sellingPrice = sp;
+
+  if (usingAutoCost) {
+    rec.costManual = false; // already computed via applyAutoSuggestion/onSellingChanged
+    if (!rec.reductionPercent || round2(rec.costPrice) !== round2(cp)) {
+      // fall back to the real engine in case the field wasn't refreshed
+      ensureCosting(rec, (o.productionStartDate || o.orderDate));
+    }
+  } else {
+    rec.costManual = true;
+    rec.costPrice = round2(cp);
+    rec.profit = round2(sp - rec.costPrice);
+  }
+
+  saveLocal();
+
+  // Two-way sync: patch the operational fields back onto the Factory Orders
+  // order itself (qty, dispatch override, remarks, customer/product/pricing).
+  // Hidden costing internals (reductionPercent / pci / windowKey / costManual)
+  // are never written to the Factory Orders bin.
+  await pushFactoryPatch(editingOrderId, {
+    qty, remarks, dispatchOverride,
+    customerName, productName, category, size, colour,
+    sellingPrice: sp, costPrice: rec.costManual ? rec.costPrice : rec.costPrice
+  });
+
+  recompute();
+  pushOverlay();
+  closeModal('pricing-modal');
+  renderDetail(editingOrderId);
+  showToast('Saved ✓ — synced to Factory Orders');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ANALYTICS — customer & product rankings (current month)
+// ══════════════════════════════════════════════════════════════════════════
+function renderAnalytics() {
+  const mKey = currentMonthKey();
+  const list = ordersInMonth(mKey);
+  const el = document.getElementById('analytics-content');
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">📈</div><h3>Not enough priced data yet</h3><p>Analytics appear once orders this month have a Selling Price.</p></div>`;
+    return;
+  }
+
+  // customer ranking — turnover/cost/profit all use Quantity
+  const byCustomer = {};
+  list.forEach(o => {
+    const key = o.customerName || 'Unassigned';
+    if (!byCustomer[key]) byCustomer[key] = { orders: 0, pieces: 0, turnover: 0, cost: 0, lastDate: '' };
+    const c = byCustomer[key];
+    c.orders++; c.pieces += o.qty; c.turnover += o.turnoverTotal; c.cost += o.costTotal;
+    if (o.orderDate > c.lastDate) c.lastDate = o.orderDate;
+  });
+  const customers = Object.entries(byCustomer).map(([name, c]) => ({
+    name, ...c, profit: round2(c.turnover - c.cost), margin: c.turnover ? round2((c.turnover-c.cost)/c.turnover*100) : 0
+  })).sort((a,b) => b.profit - a.profit);
+
+  // product ranking — turnover/cost/profit all use Quantity
+  const byProduct = {};
+  list.forEach(o => {
+    const key = o.productName || 'Unnamed';
+    if (!byProduct[key]) byProduct[key] = { qty: 0, turnover: 0, cost: 0 };
+    byProduct[key].qty += o.qty; byProduct[key].turnover += o.turnoverTotal; byProduct[key].cost += o.costTotal;
+  });
+  const products = Object.entries(byProduct).map(([name, p]) => ({
+    name, ...p, profit: round2(p.turnover - p.cost)
+  })).sort((a,b) => b.turnover - a.turnover);
+
+  const bestSelling = products.slice().sort((a,b)=>b.qty-a.qty)[0];
+  const highestRevenue = products[0];
+  const highestProfit = products.slice().sort((a,b)=>b.profit-a.profit)[0];
+
+  el.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="lbl">Best Selling Product</div><div class="val" style="font-size:14px;">${escapeHtml(bestSelling?.name||'—')}</div><div class="sub">${bestSelling?bestSelling.qty.toLocaleString()+' pcs':''}</div></div>
+      <div class="kpi-card"><div class="lbl">Highest Revenue Product</div><div class="val" style="font-size:14px;">${escapeHtml(highestRevenue?.name||'—')}</div><div class="sub">${highestRevenue?inr(highestRevenue.turnover):''}</div></div>
+      <div class="kpi-card wide"><div class="lbl">Highest Profit Product</div><div class="val" style="font-size:14px;">${escapeHtml(highestProfit?.name||'—')}</div><div class="sub">${highestProfit?inr(highestProfit.profit):''}</div></div>
+    </div>
+
+    <div class="section-title">Customer Ranking <span class="hint">by profit</span></div>
+    <div class="rank-wrap"><table class="rank-table">
+      <tr><th>Customer</th><th class="num">Orders</th><th class="num">Pieces</th><th class="num">Turnover</th><th class="num">Profit</th><th class="num">Margin</th></tr>
+      ${customers.map(c => `<tr>
+        <td class="rank-name">${escapeHtml(c.name)}</td>
+        <td class="num">${c.orders}</td>
+        <td class="num">${c.pieces.toLocaleString()}</td>
+        <td class="num">${inr(c.turnover)}</td>
+        <td class="num" style="color:var(--green);">${inr(c.profit)}</td>
+        <td class="num">${c.margin}%</td>
+      </tr>`).join('')}
+    </table></div>
+
+    <div class="section-title">Product Ranking <span class="hint">by turnover</span></div>
+    <div class="rank-wrap"><table class="rank-table">
+      <tr><th>Product</th><th class="num">Qty</th><th class="num">Turnover</th><th class="num">Profit</th></tr>
+      ${products.map(p => `<tr>
+        <td class="rank-name">${escapeHtml(p.name)}</td>
+        <td class="num">${p.qty.toLocaleString()}</td>
+        <td class="num">${inr(p.turnover)}</td>
+        <td class="num" style="color:var(--green);">${inr(p.profit)}</td>
+      </tr>`).join('')}
+    </table></div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// REPORTS — monthly, selectable history
+// ══════════════════════════════════════════════════════════════════════════
+function renderReportsScreen() {
+  const sel = document.getElementById('report-month-select');
+  const months = allMonthsWithData();
+  if (!uiState.reportMonth) uiState.reportMonth = currentMonthKey();
+  sel.innerHTML = months.map(m => `<option value="${m}" ${m===uiState.reportMonth?'selected':''}>${monthLabel(m)}</option>`).join('');
+  renderReports();
+}
+
+function renderReports() {
+  const sel = document.getElementById('report-month-select');
+  if (sel && sel.value) uiState.reportMonth = sel.value;
+  const mKey = uiState.reportMonth || currentMonthKey();
+  const list = ordersInMonth(mKey);
+  const el = document.getElementById('reports-content');
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">🗂</div><h3>No priced orders in ${monthLabel(mKey)}</h3><p>This report will fill in once orders have Selling Price entered.</p></div>`;
+    return;
+  }
+
+  const turnover = sum(list, 'turnoverTotal');
+  const cost = sum(list, 'costTotal');
+  const profit = sum(list, 'totalProfit');
+  const pieces = sum(list, 'qty');
+  const avgSellingPerUnit = sum(list, 'sellingPrice') / list.length;
+
+  const byCustomer = {};
+  list.forEach(o => {
+    const k = o.customerName || 'Unassigned';
+    byCustomer[k] = byCustomer[k] || { turnover: 0, profit: 0 };
+    byCustomer[k].turnover += o.turnoverTotal;
+    byCustomer[k].profit += o.totalProfit;
+  });
+  const custRank = Object.entries(byCustomer).sort((a,b) => b[1].profit - a[1].profit);
+
+  el.innerHTML = `
+    <div class="kpi-grid" style="margin-top:14px;">
+      <div class="kpi-card wide accent"><div class="lbl">Total Turnover</div><div class="val">${inr(turnover)}</div></div>
+      <div class="kpi-card"><div class="lbl">Manufacturing Cost</div><div class="val">${inr(cost)}</div></div>
+      <div class="kpi-card green"><div class="lbl">Profit</div><div class="val">${inr(profit)}</div></div>
+      <div class="kpi-card"><div class="lbl">Orders</div><div class="val">${list.length}</div></div>
+      <div class="kpi-card"><div class="lbl">Pieces</div><div class="val">${pieces.toLocaleString()}</div></div>
+      <div class="kpi-card"><div class="lbl">Avg Selling Price</div><div class="val">${inr(avgSellingPerUnit)}</div></div>
+    </div>
+    <div class="section-title">Customer Ranking</div>
+    <div class="rank-wrap"><table class="rank-table">
+      <tr><th>Customer</th><th class="num">Turnover</th><th class="num">Profit</th></tr>
+      ${custRank.map(([name,c]) => `<tr><td class="rank-name">${escapeHtml(name)}</td><td class="num">${inr(c.turnover)}</td><td class="num" style="color:var(--green);">${inr(c.profit)}</td></tr>`).join('')}
+    </table></div>
+  `;
+}
+
+// ── EXPORTS (admin only) — CSV works fully offline; PDF uses print dialog ──
+function exportMenu() {
+  const choice = confirm("Export this month's report as CSV?\n\nOK = CSV download\nCancel = Print / Save as PDF");
+  if (choice) exportCsv(); else window.print();
+}
+function exportCsv() {
+  const mKey = uiState.reportMonth || currentMonthKey();
+  const list = ordersInMonth(mKey);
+  const rows = [["Order #","Customer","Product","Category","Qty","Order Date","Dispatch Date","Status","Selling Price","Cost Price","Profit / Piece","Total Profit","Turnover","Manufacturing Cost","Remarks"]];
+  list.forEach(o => rows.push([o.orderNumber,o.customerName,o.productName,o.category,o.qty,o.orderDate,o.expectedDispatchDate,o.status,o.sellingPrice,o.costPrice,o.profitPerPiece,o.totalProfit,o.turnoverTotal,o.costTotal,o.remarks]));
+  const csv = rows.map(r => r.map(v => `"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `AUREA_Report_${mKey}.csv`;
+  a.click();
+  showToast('CSV downloaded ✓');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════════════════════
+function renderSettings() {
+  if (!isAdmin) { openScreen('home'); openPinModal(() => openScreen('settings-screen')); return; }
+  const el = document.getElementById('settings-content');
+  el.innerHTML = `
+    <div class="section-title">Sync Status</div>
+    <div class="rank-wrap" style="padding:14px;">
+      <div class="readonly-box"><span class="l">Factory Orders bin</span><span class="v ${lastFactoryOk?'green':''}">${lastFactoryOk?'Connected':'Offline'}</span></div>
+      <div class="readonly-box"><span class="l">AUREA overlay bin</span><span class="v">${AUREA_BIN_ID?'Configured':'Not set — local only'}</span></div>
+      <div class="readonly-box"><span class="l">Firm tracked</span><span class="v">WD Textile</span></div>
+    </div>
+    <div class="section-title">How Sync Works</div>
+    <div class="rank-wrap" style="padding:14px;">
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.6;">Status, dates, and documents are always owned by Factory Orders and only ever flow in. When Admin edits Quantity, Selling Price, Cost Price, Dispatch Date, Remarks, Customer, or Product here, that specific change is written back to the Factory Orders bin. Partner never writes anything.</p>
+    </div>
+    <div class="section-title">Admin</div>
+    <div class="rank-wrap" style="padding:14px;">
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.6;">The admin PIN and AUREA cloud bin credentials are set inside index.html under CONFIG. Edit them there before deploying, then redeploy to GitHub Pages.</p>
+    </div>
+    <button class="btn btn-cancel" style="margin-top:16px;width:100%;" onclick="isAdmin=false; showToast('Admin locked'); openScreen('home');">Lock Admin</button>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PIN MODAL
+// ══════════════════════════════════════════════════════════════════════════
+function openPinModal(cb) {
+  pinCallback = cb;
+  pinBuffer = "";
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-modal').classList.add('open');
+}
+function pinKey(k) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += k;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(() => {
+      if (pinBuffer === ADMIN_PIN) {
+        isAdmin = true;
+        closeModal('pin-modal');
+        showToast('Admin access granted ✓');
+        if (pinCallback) { const cb = pinCallback; pinCallback = null; cb(); }
+        else openScreen('settings-screen');
+      } else {
+        document.getElementById('pin-error').textContent = 'Wrong PIN. Try again.';
+        pinBuffer = '';
+        updatePinDots();
+      }
+    }, 150);
+  }
+}
+function pinDel() { pinBuffer = pinBuffer.slice(0, -1); updatePinDots(); }
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('pd' + i);
+    if (el) el.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+  }
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.getElementById('toast-root').appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+loadLocal();
+startSync();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
