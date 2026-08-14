@@ -1,0 +1,17 @@
+{
+  "name": "AUREA Partnership 2",
+  "short_name": "AUREA P2",
+  "id": "aurea-partnership-2",
+  "description": "AUREA Partnership 2 — independent order and finance tracking, not connected to Factory Orders.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#120d14",
+  "theme_color": "#120d14",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" }
+  ]
+}
