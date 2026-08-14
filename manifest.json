@@ -2,7 +2,7 @@
   "name": "AUREA Partnership 2",
   "short_name": "AUREA P2",
   "id": "aurea-partnership-2",
-  "description": "AUREA Partnership 2 — independent order and finance tracking, not connected to Factory Orders.",
+  "description": "AUREA Partnership 2 — independent order and finance tracking.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
